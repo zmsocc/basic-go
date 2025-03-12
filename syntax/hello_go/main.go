@@ -1,1 +1,5 @@
-package hello_go
+package main
+
+func main() {
+	println("hello, go")
+}
