@@ -5,13 +5,13 @@ import (
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
+	"gitee.com/zmsoc/gogogo/webook/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"net/http"
 	"strings"
 	"time"
 )
@@ -54,24 +54,13 @@ func initWebServer() *gin.Engine {
 		MaxAge: 12 * time.Hour,
 	}))
 
+	// 步骤1
 	store := cookie.NewStore([]byte("secret"))
 	server.Use(sessions.Sessions("mysession", store))
-
-	server.Use(func(ctx *gin.Context) {
-		// 不需要登录校验的
-		if ctx.Request.URL.Path == "/users/login" ||
-			ctx.Request.URL.Path == "/users/signup" {
-			return
-		}
-
-		sess := sessions.Default(ctx)
-
-		id := sess.Get("userId")
-		if id == nil {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-	})
+	// 步骤3
+	server.Use(middleware.NewLoginMiddlewareBuilder().
+		IgnorePaths("/users/signup").
+		IgnorePaths("/users/login").Build())
 	return server
 }
 

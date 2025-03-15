@@ -9,23 +9,6 @@ import (
 	"net/http"
 )
 
-/*func NewUserHandler(svc service.UserService,
-	codeSvc service.CodeService, jwtHdl ijwt.Handler) *UserHandler {
-	const (
-		emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
-		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
-	)
-	emailExp := regexp.MustCompile(emailRegexPattern, regexp.None)
-	passwordExp := regexp.MustCompile(passwordRegexPattern, regexp.None)
-	return &UserHandler{
-		svc:         svc,
-		emailExp:    emailExp,
-		passwordExp: passwordExp,
-		codeSvc:     codeSvc,
-		Handler:     jwtHdl,
-	}
-}*/
-
 type UserHandler struct {
 	svc         *service.UserService
 	emailExp    *regexp.Regexp
@@ -142,6 +125,7 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 	sess := sessions.Default(ctx)
 	// 我可以随便设置值了
 	// 要放在 session 里面的值
+	// 步骤2
 	sess.Set("userId", user.Id)
 	sess.Save()
 	ctx.String(http.StatusOK, "登陆成功")
@@ -153,5 +137,5 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 }
 
 func (u *UserHandler) Profile(ctx *gin.Context) {
-
+	ctx.String(http.StatusOK, "这是你的 Profile")
 }
