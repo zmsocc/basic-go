@@ -127,9 +127,30 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 	// 要放在 session 里面的值
 	// 步骤2
 	sess.Set("userId", user.Id)
+	sess.Options(sessions.Options{
+		// 生产环境再设置，开发环境就不用了
+		//Secure: true,
+		//HttpOnly: true,
+		MaxAge: 86400 * 30,
+	})
 	sess.Save()
 	ctx.String(http.StatusOK, "登陆成功")
 	return
+}
+
+func (u *UserHandler) Logout(ctx *gin.Context) {
+	sess := sessions.Default(ctx)
+	// 我可以随便设置值了
+	// 要放在 session 里面的值
+	// 步骤2
+	sess.Options(sessions.Options{
+		// 生产环境再设置，开发环境就不用了
+		//Secure: true,
+		//HttpOnly: true,
+		MaxAge: -1,
+	})
+	sess.Save()
+	ctx.String(http.StatusOK, "成功退出登陆")
 }
 
 func (u *UserHandler) Edit(ctx *gin.Context) {
