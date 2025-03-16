@@ -41,7 +41,8 @@ func initWebServer() *gin.Engine {
 		//AllowOrigins: []string{"http://localhost:3000"},
 		//AllowMethods: []string{"PUT", "PATCH", "POST", "GET"},
 		AllowHeaders: []string{"Authorization", "Content-Type"},
-		//ExposeHeaders:    []string{},
+		// ExposeHeaders 不加这个，前端是拿不到的
+		ExposeHeaders: []string{"x-jwt-token"},
 		// AllowCredentials 是否允许你带 cookie 之类的东西
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
@@ -69,7 +70,10 @@ func initWebServer() *gin.Engine {
 	}
 	server.Use(sessions.Sessions("mysession", store))
 	// 步骤3
-	server.Use(middleware.NewLoginMiddlewareBuilder().
+	//server.Use(middleware.NewLoginMiddlewareBuilder().
+	//	IgnorePaths("/users/signup").
+	//	IgnorePaths("/users/login").Build())
+	server.Use(middleware.NewLoginJWTMiddlewareBuilder().
 		IgnorePaths("/users/signup").
 		IgnorePaths("/users/login").Build())
 	return server
