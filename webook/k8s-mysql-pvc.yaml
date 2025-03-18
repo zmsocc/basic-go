@@ -1,0 +1,21 @@
+# PVC => PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+# 这个是指 mysql 要用的东西
+# 我 k8s 有什么？？？
+  name: webook-mysql-live-claim
+spec:
+# 这个可以随便
+  storageClassName: suibian
+  accessModes:
+    - ReadWriteOnce
+# 多个读，一个写
+#    - ReadOnlyMany
+# 多个读写
+#    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+  

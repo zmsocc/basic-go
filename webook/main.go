@@ -6,23 +6,29 @@ import (
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
 	"gitee.com/zmsoc/gogogo/webook/internal/web/middleware"
+	"gitee.com/zmsoc/gogogo/webook/pkg/ginx/middlewares/ratelimit"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/redis"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"net/http"
 	"strings"
 	"time"
 )
 
+// db := initDB()
+// server := initWebServer()
+//
+// u := initUser(db)
+// u.RegisterRoutes(server)
 func main() {
-	db := initDB()
-	server := initWebServer()
-
-	u := initUser(db)
-	u.RegisterRoutes(server)
-
+	server := gin.Default()
+	server.GET("/hello", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "你好 你来了")
+	})
 	server.Run(":8080")
 }
 
@@ -36,6 +42,11 @@ func initWebServer() *gin.Engine {
 	server.Use(func(ctx *gin.Context) {
 		println("这是第二个 middleware")
 	})
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: "webook-live-redis:11479",
+	})
+	server.Use(ratelimit.NewBuilder(redisClient, time.Second, 100).Build())
 
 	server.Use(cors.New(cors.Config{
 		//AllowOrigins: []string{"http://localhost:3000"},
@@ -56,18 +67,19 @@ func initWebServer() *gin.Engine {
 	}))
 
 	// 步骤1
-	//store := cookie.NewStore([]byte("secret"))
+	store := cookie.NewStore([]byte("secret"))
 	// 单实例部署
-	//store := memstore.NewStore([]byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDE"),
+	//store := memstore.NewMemStore([]byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDE"),
 	//	[]byte("EtreByecTpnpSA5WkwD3Mz5sQQbCnz6R"))
 
 	// 多实例部署
-	store, err := redis.NewStore(16, "tcp", "localhost:6379", "",
-		[]byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDE"),
-		[]byte("EtreByecTpnpSA5WkwD3Mz5sQQbCnz6R"))
-	if err != nil {
-		panic(err)
-	}
+	//store, err := redis.NewStore(16, "tcp", "localhost:6379", "",
+	//	[]byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDE"),
+	//	[]byte("EtreByecTpnpSA5WkwD3Mz5sQQbCnz6R"))
+	//if err != nil {
+	//	panic(err)
+	//}
+
 	server.Use(sessions.Sessions("mysession", store))
 	// 步骤3
 	//server.Use(middleware.NewLoginMiddlewareBuilder().
@@ -88,7 +100,7 @@ func initUser(db *gorm.DB) *web.UserHandler {
 }
 
 func initDB() *gorm.DB {
-	db, err := gorm.Open(mysql.Open("root:root@tcp(localhost:13316)/webook"))
+	db, err := gorm.Open(mysql.Open("root:root@tcp(webook-live-mysql:11309)/webook"))
 	if err != nil {
 		// 我只会在初始化过程中 panic
 		// panic 相当于整个 goroutine 结束
