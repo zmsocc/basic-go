@@ -2,14 +2,10 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"gitee.com/zmsoc/gogogo/webook/internal/domain"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 var ErrUserDuplicateEmail = repository.ErrUserDuplicateEmail
@@ -49,32 +45,25 @@ func (svc *UserService) SignUp(ctx context.Context, u domain.User) error {
 		return err
 	}
 	u.Password = string(hash)
-
-	// 然后就是存起来
-	err = svc.repo.Create(ctx, u)
-	if err != nil {
-		return err
-	}
-	// Redis 不知道怎么处理这个 u，所以要转化
-	val, err := json.Marshal(u)
-	if err != nil {
-		return err
-	}
-	// 要求 u 的 id 不为 0
-	err = svc.redis.Set(ctx, fmt.Sprintf("user:info:%d", u.Id), val, time.Minute*30)
-	return err
+	return svc.repo.Create(ctx, u)
 }
 
 func (svc *UserService) Profile(ctx context.Context, id int64) (domain.User, error) {
-	// 第一个念头是
-	val, err := svc.redis.Get(ctx, fmt.Sprintf("user:info:%d", id)).Result()
-	if err != nil {
-		return domain.User{}, err
-	}
-	var u domain.User
-	err = json.Unmarshal([]byte(val), &u)
-	if err != nil {
-		return u, err
-	}
-	// 接下来就是从数据库里面查找
+	u, err := svc.repo.FindById(ctx, id)
+	return u, err
+
 }
+
+//func (svc *UserService) Profile(ctx context.Context, id int64) (domain.User, error) {
+//// 第一个念头是
+//val, err := svc.redis.Get(ctx, fmt.Sprintf("user:info:%d", id)).Result()
+//if err != nil {
+//	return domain.User{}, err
+//}
+//var u domain.User
+//err = json.Unmarshal([]byte(val), &u)
+//if err != nil {
+//	return u, err
+//}
+//// 接下来就是从数据库里面查找
+//}
