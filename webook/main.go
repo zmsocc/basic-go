@@ -3,12 +3,15 @@ package main
 import (
 	"gitee.com/zmsoc/gogogo/webook/config"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
+	"gitee.com/zmsoc/gogogo/webook/internal/repository/cache"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/memory"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
 	"gitee.com/zmsoc/gogogo/webook/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net/http"
@@ -85,15 +88,22 @@ func initWebServer() *gin.Engine {
 	//	IgnorePaths("/users/login").Build())
 	server.Use(middleware.NewLoginJWTMiddlewareBuilder().
 		IgnorePaths("/users/signup").
+		IgnorePaths("/users/login_sms/code/send").
+		IgnorePaths("/users/login_sms").
 		IgnorePaths("/users/login").Build())
 	return server
 }
 
-func initUser(db *gorm.DB) *web.UserHandler {
+func initUser(db *gorm.DB, rdb redis.Cmdable) *web.UserHandler {
 	ud := dao.NewUserDAO(db)
-	repo := repository.NewUserRepository(ud)
+	uc := cache.NewUserCache(rdb)
+	repo := repository.NewUserRepository(ud, uc)
 	svc := service.NewUserService(repo)
-	u := web.NewUserHandler(svc)
+	codeCache := cache.NewCodeCache(rdb)
+	codeRepo := repository.NewCodeRepository(codeCache)
+	smsSvc := memory.NewService()
+	codeSvc := service.NewCodeService(codeRepo, smsSvc)
+	u := web.NewUserHandler(svc, codeSvc)
 	return u
 }
 
