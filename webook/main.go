@@ -23,7 +23,8 @@ func main() {
 	db := initDB()
 	server := initWebServer()
 
-	u := initUser(db)
+	rdb := initRedis()
+	u := initUser(db, rdb)
 	u.RegisterRoutes(server)
 
 	//server := gin.Default()
@@ -108,7 +109,7 @@ func initUser(db *gorm.DB, rdb redis.Cmdable) *web.UserHandler {
 }
 
 func initDB() *gorm.DB {
-	db, err := gorm.Open(mysql.Open(config.Config.DB.DSN))
+	db, err := gorm.Open(mysql.Open("root:root@tcp(webook-live-mysql:11316)/webook"))
 	if err != nil {
 		// 我只会在初始化过程中 panic
 		// panic 相当于整个 goroutine 结束
@@ -121,4 +122,11 @@ func initDB() *gorm.DB {
 		panic(err)
 	}
 	return db
+}
+
+func initRedis() redis.Cmdable {
+	rdb := redis.NewClient(&redis.Options{
+		Addr: config.Config.Redis.Addr,
+	})
+	return rdb
 }

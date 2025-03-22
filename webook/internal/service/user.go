@@ -48,6 +48,23 @@ func (svc *UserService) SignUp(ctx context.Context, u domain.User) error {
 	return svc.repo.Create(ctx, u)
 }
 
+func (svc *UserService) FindOrCreate(ctx context.Context, phone string) (domain.User, error {
+	u, err := svc.repo.FindByPhone(ctx, phone)
+	// 要判断，有没有这个用户
+	if err != repository.ErrUserNotFound {
+		// nil 会进来这里
+		// 不为 ErrUserNotFound 的也进来这里
+		return u, err
+	}
+
+	// 你明确知道，没有这个用户
+	u = domain.User{
+		Phone: phone,
+	}
+	err = svc.repo.Create(ctx, u)
+	return u, err
+})
+
 func (svc *UserService) Profile(ctx context.Context, id int64) (domain.User, error) {
 	u, err := svc.repo.FindById(ctx, id)
 	return u, err

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
@@ -21,6 +22,12 @@ func NewUserDAO(db *gorm.DB) *UserDAO {
 	return &UserDAO{
 		db: db,
 	}
+}
+
+func (dao *UserDAO) FindByPhone(ctx context.Context, phone string) (User, error) {
+	var u User
+	err := dao.db.WithContext(ctx).Where("phone = ?", phone).First(&u).Error
+	return u, err
 }
 
 func (dao *UserDAO) FindByEmail(ctx context.Context, email string) (User, error) {
@@ -57,8 +64,12 @@ func (dao *UserDAO) Insert(ctx context.Context, u User) error {
 type User struct {
 	Id int64 `gorm:"primaryKey, autoIncrement"`
 	// 全部用户唯一
-	Email    string `gorm:"unique"`
+	Email    sql.NullString `gorm:"unique"`
 	Password string
+
+	// 唯一索引允许有多个空值
+	// 但是不能有多个""
+	Phone sql.NullString `gorm:"unique"`
 
 	// 创建时间，毫秒数
 	Ctime int64
