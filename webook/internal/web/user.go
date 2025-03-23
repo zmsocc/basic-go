@@ -14,6 +14,12 @@ import (
 
 const biz = "login"
 
+// 确保 UserHandler 上实现了 handler 接口
+var _ handler = &UserHandler{}
+
+// 这个更优雅
+var _ handler = (*UserHandler)(nil)
+
 type UserHandler struct {
 	svc         *service.UserService
 	codeSvc     *service.CodeService
@@ -81,13 +87,25 @@ func (u *UserHandler) LoginSMS(ctx *gin.Context) {
 	}
 
 	// 我这个手机号，会不会是一个新用户
-	u.svc.FindOrCreate(ctx, req.Phone)
+	user, err := u.svc.FindOrCreate(ctx, req.Phone)
+	if err != nil {
+		ctx.JSON(http.StatusOK, Result{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
+	}
 	// 这边要怎么办？
-	u.setJWTToken(ctx, 123)
+	if err = u.setJWTToken(ctx, user.Id); err != nil {
+		ctx.JSON(http.StatusOK, Result{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, Result{
-		Code: 4,
-		Msg:  "验证码校验通过",
+		Msg: "验证码校验通过",
 	})
 }
 
@@ -118,6 +136,7 @@ func (u *UserHandler) SendLoginSMACode(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, Result{Code: 5, Msg: "系统错误"})
 	}
 }
+
 func (u *UserHandler) SignUp(ctx *gin.Context) {
 	type SignUpReq struct {
 		Email           string `json:"email"`
