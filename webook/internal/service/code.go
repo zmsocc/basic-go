@@ -15,20 +15,24 @@ var (
 	ErrCodeSendTooMany        = repository.ErrCodeSendTooMany
 )
 
-type CodeService struct {
-	repo   *repository.CodeRepository
+type CodeService interface {
+	Send(ctx context.Context, biz string, phone string) error
+	Verify(ctx context.Context, biz string, phone string, inputCode string) (bool, error)
+}
+type codeService struct {
+	repo   repository.CodeRepository
 	smsSvc sms.Service
 }
 
-func NewCodeService(repo *repository.CodeRepository, smsSvc sms.Service) *CodeService {
-	return &CodeService{
+func NewCodeService(repo repository.CodeRepository, smsSvc sms.Service) CodeService {
+	return &codeService{
 		repo:   repo,
 		smsSvc: smsSvc,
 	}
 }
 
 // biz 区别业务场景
-func (svc *CodeService) Send(ctx context.Context, biz string, phone string) error {
+func (svc *codeService) Send(ctx context.Context, biz string, phone string) error {
 	// 生成一个验证码
 	code := svc.generateCode()
 	// 塞进去 Redis
@@ -42,11 +46,11 @@ func (svc *CodeService) Send(ctx context.Context, biz string, phone string) erro
 	return err
 }
 
-func (svc *CodeService) Verify(ctx context.Context, biz string, phone string, inputCode string) (bool, error) {
+func (svc *codeService) Verify(ctx context.Context, biz string, phone string, inputCode string) (bool, error) {
 	return svc.repo.Verify(ctx, biz, phone, inputCode)
 }
 
-func (svc *CodeService) generateCode() string {
+func (svc *codeService) generateCode() string {
 	// 六位数， num 在0， 1000000之间，包含0，不包含1000000
 	num := rand.Intn(1000000)
 	// 不够六位的，前面加上0，补够六位

@@ -33,7 +33,7 @@ func InitWebServer() *gin.Engine {
 		web.NewUserHandler,
 		//gin.Default,
 
-		ioc.InitGin,
+		ioc.InitWebServer,
 		ioc.InitMiddlewares,
 	)
 	return new(gin.Engine)
