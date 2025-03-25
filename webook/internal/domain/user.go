@@ -10,6 +10,9 @@ type User struct {
 	Password string
 	Phone    string
 	Ctime    time.Time
+	Nickname string
+	Birthday time.Time
+	AboutMe  string
 }
 
 //type Address struct {

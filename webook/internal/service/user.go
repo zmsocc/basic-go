@@ -16,16 +16,22 @@ type UserService interface {
 	SignUp(ctx context.Context, u domain.User) error
 	FindOrCreate(ctx context.Context, phone string) (domain.User, error)
 	Profile(ctx context.Context, id int64) (domain.User, error)
+	UpdateNonSensitiveInfo(ctx context.Context, u domain.User) error
 }
 
 type userService struct {
 	repo repository.UserRepository
 }
 
+// NewUserService 我用的人只管用，一点都不关心如何初始化
 func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
 		repo: repo,
 	}
+}
+
+func (svc *userService) UpdateNonSensitiveInfo(ctx context.Context, u domain.User) error {
+	panic("implement me")
 }
 
 func (svc *userService) Login(ctx context.Context, email string, password string) (domain.User, error) {
@@ -82,9 +88,9 @@ func (svc *userService) FindOrCreate(ctx context.Context, phone string) (domain.
 }
 
 func (svc *userService) Profile(ctx context.Context, id int64) (domain.User, error) {
-	u, err := svc.repo.FindById(ctx, id)
-	return u, err
-
+	// 在系统内部，基本上都是用 id 的
+	// 有些人的系统比较复杂，有一个 GUID (Global Unique Id)
+	return svc.repo.FindById(ctx, id)
 }
 
 func PathDownGrade(ctx context.Context, quick, slow func()) {

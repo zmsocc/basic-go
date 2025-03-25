@@ -16,6 +16,8 @@ var (
 
 //var ErrUserDuplicateEmailV1 = fmt.Errorf("%w 邮箱错误", dao.ErrUserDuplicateEmail)
 
+// UserRepository 是核心，他有不同实现，但是 Factory 如果本身只是初始化一下的话
+// 那么它不是你的核心
 type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)

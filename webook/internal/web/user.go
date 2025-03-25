@@ -297,12 +297,84 @@ func (u *UserHandler) Logout(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "成功退出登陆")
 }
 
-func (u *UserHandler) Edit(ctx *gin.Context) {
-
+func (c *UserHandler) Edit(ctx *gin.Context) {
+	type Req struct {
+		// 注意，其他字段，尤其是密码，邮箱和手机
+		// 修改都要通过别的手段
+		// 修改邮箱和手机都要验证
+		// 密码就更加不用说了
+		Nickname string `json:"nickname"`
+		Birthday string `json:"birthday"`
+		AboutMe  string `json:"aboutMe"`
+	}
+	var req Req
+	if err := ctx.Bind(&req); err != nil {
+	}
+	if req.Nickname == "" {
+		ctx.JSON(http.StatusOK, Result{
+			Code: 4,
+			Msg:  "昵称不能为空",
+		})
+		return
+	}
+	if len(req.AboutMe) > 1024 {
+		ctx.JSON(http.StatusOK, Result{
+			Code: 4,
+			Msg:  "关于我过长",
+		})
+		return
+	}
+	birthday, err := time.Parse(time.DateOnly, req.Birthday)
+	if err != nil {
+		// 也就是说，我们其实并没有直接校验具体的格式
+		// 而是如果你能转化过来，那就说明没问题
+		ctx.JSON(http.StatusOK, Result{
+			Code: 4,
+			Msg:  "日期格式不对",
+		})
+		return
+	}
+	uc := ctx.MustGet("user").(UserClaims)
+	err = c.svc.UpdateNonSensitiveInfo(ctx, domain.User{
+		Id:       uc.Uid,
+		Nickname: req.Nickname,
+		AboutMe:  req.AboutMe,
+		Birthday: birthday,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusOK, Result{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, Result{Msg: "OK"})
 }
 
-func (u *UserHandler) ProfileJWT(ctx *gin.Context) {
-	c, _ := ctx.Get("claims")
+func (c *UserHandler) ProfileJWT(ctx *gin.Context) {
+	type Profile struct {
+		Email    string
+		Phone    string
+		Nickname string
+		Birthday string
+		AboutMe  string
+	}
+	uc := ctx.MustGet("user").(UserClaims)
+	u, err := c.svc.Profile(ctx, uc.Uid)
+	if err != nil {
+		// 按照道理来说，这边 id 对应的数据肯定存在，所以要是没找到，
+		// 那就说明是系统出了问题
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	ctx.JSON(http.StatusOK, Profile{
+		Email:    u.Email,
+		Phone:    u.Phone,
+		Nickname: u.Nickname,
+		Birthday: u.Birthday.Format(time.DateOnly),
+		AboutMe:  u.AboutMe,
+	})
+	//c, _ := ctx.Get("claims")
 	// 你可以断定， 必然有 claims
 	//if !ok {
 	//	// 你可以考虑监控住这里
@@ -310,19 +382,33 @@ func (u *UserHandler) ProfileJWT(ctx *gin.Context) {
 	//	return
 	//}
 	// ok 代表是不是 *UserClaims
-	claims, ok := c.(*UserClaims)
-	if !ok {
-		// 你可以考虑监控住这里
-		ctx.String(http.StatusOK, "系统错误")
-		return
-	}
-	println(claims.Uid)
-	ctx.String(http.StatusOK, "你的 profile")
-	// 这边就是你补充 profile 的其他代码
+	//claims, ok := c.(*UserClaims)
+	//if !ok {
+	//	// 你可以考虑监控住这里
+	//	ctx.String(http.StatusOK, "系统错误")
+	//	return
+	//}
+	//println(claims.Uid)
+	//ctx.String(http.StatusOK, "你的 profile")
+	//// 这边就是你补充 profile 的其他代码
 }
 
-func (u *UserHandler) Profile(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "这是你的 Profile")
+func (c *UserHandler) Profile(ctx *gin.Context) {
+	//type Profile struct {
+	//	Email string
+	//}
+	//sess := sessions.Default(ctx)
+	//id := sess.Get(userIdKey).(int64)
+	//u, err := c.svc.Profile(ctx, id)
+	//if err != nil {
+	//	// 按照道理来说，这边 id 对应的数据肯定存在，所以要是没找到，
+	//	// 那就说明是系统出了问题
+	//	ctx.String(http.StatusOK, "系统错误")
+	//	return
+	//}
+	//ctx.JSON(http.StatusOK, Profile{
+	//	Email: u.Email,
+	//})
 }
 
 type UserClaims struct {
