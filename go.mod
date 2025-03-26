@@ -20,6 +20,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.1115
 	go.uber.org/atomic v1.11.0
 	go.uber.org/mock v0.5.0
+	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.31.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/sqlite v1.5.7
@@ -84,6 +85,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/yuin/goldmark v1.7.1 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.12.0 // indirect
 	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/mobile v0.0.0-20231127183840-76ac6878050a // indirect

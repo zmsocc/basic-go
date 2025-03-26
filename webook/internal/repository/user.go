@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"gitee.com/zmsoc/gogogo/webook/internal/domain"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/cache"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
@@ -62,14 +63,22 @@ func (r *CachedUserRepository) FindById(ctx context.Context, id int64) (domain.U
 	// 再从 dao 里面找
 	// 找到了回写 cache
 	u, err := r.cache.Get(ctx, id)
-	if err != nil {
+	if err == nil {
 		// 必然是有数据
-		return domain.User{}, err
+		return u, nil
 	}
 	// 没这个数据
 	//if err == cache.ErrKeyNotExist {
 	//	去数据库里面加载
 	//}
+
+	// 尝试去数据库查询
+	if ctx.Value("limited") == "true" {
+		// 不去了
+
+		return domain.User{}, errors.New("触发限流，缓存未命中，不查询数据库")
+	}
+
 	ue, err := r.dao.FindById(ctx, id)
 	if err != nil {
 		return domain.User{}, err
@@ -79,8 +88,9 @@ func (r *CachedUserRepository) FindById(ctx context.Context, id int64) (domain.U
 	err = r.cache.Set(ctx, u)
 	if err != nil {
 		// 打日志，做监控
+		return domain.User{}, err
 	}
-	return u, err
+	return u, nil
 }
 
 func (r *CachedUserRepository) domainToEntity(u domain.User) dao.User {

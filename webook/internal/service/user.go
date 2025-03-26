@@ -16,7 +16,7 @@ type UserService interface {
 	SignUp(ctx context.Context, u domain.User) error
 	FindOrCreate(ctx context.Context, phone string) (domain.User, error)
 	Profile(ctx context.Context, id int64) (domain.User, error)
-	UpdateNonSensitiveInfo(ctx context.Context, u domain.User) error
+	UpdateNonSensitiveInfo(ctx *context.Context, user domain.User) error
 }
 
 type userService struct {
@@ -30,7 +30,8 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 
-func (svc *userService) UpdateNonSensitiveInfo(ctx context.Context, u domain.User) error {
+func (svc *userService) UpdateNonSensitiveInfo(ctx *context.Context, user domain.User) error {
+	//TODO implement me
 	panic("implement me")
 }
 
@@ -90,7 +91,8 @@ func (svc *userService) FindOrCreate(ctx context.Context, phone string) (domain.
 func (svc *userService) Profile(ctx context.Context, id int64) (domain.User, error) {
 	// 在系统内部，基本上都是用 id 的
 	// 有些人的系统比较复杂，有一个 GUID (Global Unique Id)
-	return svc.repo.FindById(ctx, id)
+	u, err := svc.repo.FindById(ctx, id)
+	return u, err
 }
 
 func PathDownGrade(ctx context.Context, quick, slow func()) {
