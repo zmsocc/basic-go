@@ -3,6 +3,7 @@ package tencent
 import (
 	"context"
 	"fmt"
+	"gitee.com/zmsoc/gogogo/webook/pkg/ratelimit"
 	"github.com/ecodeclub/ekit"
 	"github.com/ecodeclub/ekit/slice"
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
@@ -12,13 +13,15 @@ type Service struct {
 	appId    *string
 	signName *string
 	client   *sms.Client
+	limiter  ratelimit.Limiter
 }
 
-func NewService(appId, signName string, client *sms.Client) *Service {
+func NewService(appId, signName string, client *sms.Client, limiter ratelimit.Limiter) *Service {
 	return &Service{
 		client:   client,
 		appId:    ekit.ToPtr[string](appId),
 		signName: ekit.ToPtr[string](signName),
+		limiter:  limiter,
 	}
 }
 

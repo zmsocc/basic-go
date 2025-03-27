@@ -5,6 +5,7 @@ import (
 	"errors"
 	"gitee.com/zmsoc/gogogo/webook/internal/domain"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,7 +17,7 @@ type UserService interface {
 	SignUp(ctx context.Context, u domain.User) error
 	FindOrCreate(ctx context.Context, phone string) (domain.User, error)
 	Profile(ctx context.Context, id int64) (domain.User, error)
-	UpdateNonSensitiveInfo(ctx *context.Context, user domain.User) error
+	UpdateNonSensitiveInfo(ctx *gin.Context, user domain.User) error
 }
 
 type userService struct {
@@ -30,7 +31,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 
-func (svc *userService) UpdateNonSensitiveInfo(ctx *context.Context, user domain.User) error {
+func (svc *userService) UpdateNonSensitiveInfo(ctx *gin.Context, user domain.User) error {
 	//TODO implement me
 	panic("implement me")
 }

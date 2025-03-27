@@ -196,7 +196,11 @@ func TestUserHandler_SignUp(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			// 这里你就可以继续使用 req
 			resp := httptest.NewRecorder()
-			t.Log(resp)
+
+			// 测 LoginSMS
+			server.Use(func(c *gin.Context) {
+				c.Set("user", UserClaims{})
+			})
 
 			// 这就是 HTTP 请求进去 GIN 框架的入口
 			// 当你这样调用的时候，GIN 就会处理这个请求
