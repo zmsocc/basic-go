@@ -13,6 +13,8 @@ type User struct {
 	Nickname string
 	Birthday time.Time
 	AboutMe  string
+	// 不要组合，万一将来有同名字段，dingdingInfo
+	WechatInfo WechatInfo
 }
 
 //type Address struct {

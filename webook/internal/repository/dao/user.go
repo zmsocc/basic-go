@@ -19,6 +19,7 @@ type UserDAO interface {
 	FindByEmail(ctx context.Context, email string) (User, error)
 	FindById(ctx context.Context, id int64) (User, error)
 	Insert(ctx context.Context, u User) error
+	FindByWechat(ctx context.Context, openID string) (User, error)
 }
 
 type GORMUserDAO struct {
@@ -26,9 +27,10 @@ type GORMUserDAO struct {
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
-	return &GORMUserDAO{
+	res := &GORMUserDAO{
 		db: db,
 	}
+	return res
 }
 
 func (dao *GORMUserDAO) FindByPhone(ctx context.Context, phone string) (User, error) {
@@ -47,6 +49,14 @@ func (dao *GORMUserDAO) FindByEmail(ctx context.Context, email string) (User, er
 func (dao *GORMUserDAO) FindById(ctx context.Context, id int64) (User, error) {
 	var u User
 	err := dao.db.WithContext(ctx).Where("`id` = ?", id).First(&u).Error
+	return u, err
+}
+
+func (dao *GORMUserDAO) FindByWechat(ctx context.Context, openID string) (User, error) {
+	var u User
+	err := dao.db.WithContext(ctx).Where("wechat_open_id = ?", openID).First(&u).Error
+	//err := dao.p().WithContext(ctx).Where("wechat_open_id = ?", openID).First(&u).Error
+	//err := dao.db.WithContext(ctx).First(&u, "email = ?", email).Error
 	return u, err
 }
 
@@ -77,6 +87,18 @@ type User struct {
 	// 唯一索引允许有多个空值
 	// 但是不能有多个""
 	Phone sql.NullString `gorm:"unique"`
+
+	// 索引的最左匹配原则：
+	// 假如索引在<A, B, C>建好了
+	// A，AB，ABC 都能用，
+	// WHERE 里面带了 ABC， 可以用
+	// WHERE 里面，没有 A，就不能用
+
+	// 如果要创建联合索引，<unionid, openid>，用 openid 查询的时候不会走索引
+	// <openid, unionid> 用 unionid 查询的时候，不会走索引
+	// 微信的字段
+	WechatUnionID sql.NullString
+	WechatOpenID  sql.NullString `gorm:"unique"`
 
 	// 创建时间，毫秒数
 	Ctime int64

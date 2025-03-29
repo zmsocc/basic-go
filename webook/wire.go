@@ -16,7 +16,8 @@ import (
 func InitWebServer() *gin.Engine {
 	wire.Build(
 		// 最基础的第三方依赖
-		ioc.InitDB, ioc.InitRedis,
+		ioc.InitDB,
+		ioc.InitRedis,
 		// 初始化 DAO
 		dao.NewUserDAO,
 		// 初始化 缓存
@@ -30,7 +31,10 @@ func InitWebServer() *gin.Engine {
 		service.NewCodeService,
 		// 直接基于内存实现
 		ioc.InitSMSService,
+		ioc.InitWechatService,
+
 		web.NewUserHandler,
+		web.NewOAuth2WechatHandler,
 		//gin.Default,
 
 		ioc.InitWebServer,
