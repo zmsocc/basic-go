@@ -14,14 +14,15 @@ import (
 var redirectURI = url.PathEscape("https://meoying.com/oauth2/wechat/callback")
 
 type Service interface {
-	AuthURL(ctx context.Context) (string, error)
-	VerifyCode(ctx context.Context, code string, state string) (domain.WechatInfo, error)
+	AuthURL(ctx context.Context, state string) (string, error)
+	VerifyCode(ctx context.Context, code string) (domain.WechatInfo, error)
 }
 
 type service struct {
 	appId     string
 	appSecret string
 	client    *http.Client
+	//cmd       redis.Cmdable
 }
 
 func NewService(appId string, appSecret string, client *http.Client) Service {
@@ -32,7 +33,7 @@ func NewService(appId string, appSecret string, client *http.Client) Service {
 	}
 }
 
-func (s *service) VerifyCode(ctx context.Context, code string, state string) (domain.WechatInfo, error) {
+func (s *service) VerifyCode(ctx context.Context, code string) (domain.WechatInfo, error) {
 	const targetPattern = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code"
 	target := fmt.Sprintf(targetPattern, s.appId, s.appSecret, code)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
@@ -55,6 +56,11 @@ func (s *service) VerifyCode(ctx context.Context, code string, state string) (do
 			fmt.Errorf("微信返回错误响应，错误码：%d，错误信息：%s", res.ErrCode, res.ErrMsg)
 	}
 
+	//// 攻击者的 state
+	//str := s.cmd.Get(ctx, "my-state"+state).String()
+	//if str != state {
+	//	// 不相等
+	//}
 	return domain.WechatInfo{
 		OpenID:  res.OpenID,
 		UnionID: res.UnionID,
@@ -62,9 +68,11 @@ func (s *service) VerifyCode(ctx context.Context, code string, state string) (do
 	//req := http.NewRequest()
 }
 
-func (s *service) AuthURL(ctx context.Context) (string, error) {
+func (s *service) AuthURL(ctx context.Context, state string) (string, error) {
 	const urlPattern = "https://open.weixin.qq.com/connect/qrconnect?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_login&state=%s#wechat_redirect"
-	state := uuid.New()
+	state = uuid.New()
+	// 如果在这里存 state，假如说我存 redis
+	//s.cmd.Set(ctx, "my-state"+state, state, time.Minute)
 	return fmt.Sprintf(urlPattern, s.appId, redirectURI, state), nil
 }
 
