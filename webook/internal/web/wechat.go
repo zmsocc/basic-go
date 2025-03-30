@@ -27,10 +27,11 @@ type WechatHandlerConfig struct {
 func NewOAuth2WechatHandler(svc wechat.Service, userSVC service.UserService,
 	cfg WechatHandlerConfig) *OAuth2WechatHandler {
 	return &OAuth2WechatHandler{
-		svc:      svc,
-		userSVC:  userSVC,
-		stateKey: []byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDF"),
-		cfg:      cfg,
+		svc:        svc,
+		userSVC:    userSVC,
+		stateKey:   []byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDF"),
+		cfg:        cfg,
+		jwtHandler: NewJwtHandler(),
 	}
 }
 
@@ -117,6 +118,16 @@ func (h *OAuth2WechatHandler) Callback(ctx *gin.Context) {
 		})
 		return
 	}
+
+	err = h.setRefreshToken(ctx, u.Id)
+	if err != nil {
+		ctx.JSON(http.StatusOK, Result{
+			Code: 5,
+			Msg:  "系统错误",
+		})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, Result{
 		Msg: "OK",
 	})
