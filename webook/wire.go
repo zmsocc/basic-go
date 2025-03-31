@@ -8,6 +8,7 @@ import (
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
+	ijwt "gitee.com/zmsoc/gogogo/webook/internal/web/jwt"
 	"gitee.com/zmsoc/gogogo/webook/ioc"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
@@ -36,6 +37,7 @@ func InitWebServer() *gin.Engine {
 		web.NewUserHandler,
 		web.NewOAuth2WechatHandler,
 		ioc.NewWechatHandlerConfig,
+		ijwt.NewRedisJWTHandler,
 		//gin.Default,
 
 		ioc.InitWebServer,

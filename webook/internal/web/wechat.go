@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	"gitee.com/zmsoc/gogogo/webook/internal/service/oauth2/wechat"
+	ijwt "gitee.com/zmsoc/gogogo/webook/internal/web/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	uuid "github.com/lithammer/shortuuid/v4"
@@ -15,7 +16,7 @@ import (
 type OAuth2WechatHandler struct {
 	svc     wechat.Service
 	userSVC service.UserService
-	jwtHandler
+	ijwt.Handler
 	stateKey []byte
 	cfg      WechatHandlerConfig
 }
@@ -25,13 +26,13 @@ type WechatHandlerConfig struct {
 }
 
 func NewOAuth2WechatHandler(svc wechat.Service, userSVC service.UserService,
-	cfg WechatHandlerConfig) *OAuth2WechatHandler {
+	cfg WechatHandlerConfig, jwtHdl ijwt.Handler) *OAuth2WechatHandler {
 	return &OAuth2WechatHandler{
-		svc:        svc,
-		userSVC:    userSVC,
-		stateKey:   []byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDF"),
-		cfg:        cfg,
-		jwtHandler: NewJwtHandler(),
+		svc:      svc,
+		userSVC:  userSVC,
+		stateKey: []byte("hC2pcTKJUakr7wXNmu2xd4WHxKAJpFDF"),
+		cfg:      cfg,
+		Handler:  jwtHdl,
 	}
 }
 
@@ -110,16 +111,7 @@ func (h *OAuth2WechatHandler) Callback(ctx *gin.Context) {
 		})
 		return
 	}
-	err = h.setJWTToken(ctx, u.Id)
-	if err != nil {
-		ctx.JSON(http.StatusOK, Result{
-			Code: 5,
-			Msg:  "系统错误",
-		})
-		return
-	}
-
-	err = h.setRefreshToken(ctx, u.Id)
+	err = h.SetLoginToken(ctx, u.Id)
 	if err != nil {
 		ctx.JSON(http.StatusOK, Result{
 			Code: 5,
