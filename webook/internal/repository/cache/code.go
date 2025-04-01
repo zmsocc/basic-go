@@ -93,7 +93,3 @@ func (c *RedisCodeCache) Verify(ctx context.Context, biz, phone, inputCode strin
 func (c *RedisCodeCache) key(biz, phone string) string {
 	return fmt.Sprintf("phone_code: %s, %s", biz, phone)
 }
-
-type LocalCodeCache struct {
-	client redis.Cmdable
-}
