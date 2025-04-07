@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
 	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"go.uber.org/atomic"
 	"math/rand"
 )
 
-const codeTplId = "1877556"
+var codeTplId atomic.String = atomic.String{}
 
 var (
 	ErrCodeVerifyTooManyTimes = repository.ErrCodeVerifyTooManyTimes
@@ -19,12 +20,18 @@ type CodeService interface {
 	Send(ctx context.Context, biz string, phone string) error
 	Verify(ctx context.Context, biz string, phone string, inputCode string) (bool, error)
 }
+
 type codeService struct {
 	repo   repository.CodeRepository
 	smsSvc sms.Service
 }
 
 func NewCodeService(repo repository.CodeRepository, smsSvc sms.Service) CodeService {
+	codeTplId.Store("1877556")
+	//viper.OnConfigChange(func(in fsnotify.Event) {
+	//	codeTplId.Store(viper.GetString("code.tpl.id"))
+	//})
+
 	return &codeService{
 		repo:   repo,
 		smsSvc: smsSvc,
@@ -42,7 +49,7 @@ func (svc *codeService) Send(ctx context.Context, biz string, phone string) erro
 		return err
 	}
 	// 发送出去
-	err = svc.smsSvc.Send(ctx, codeTplId, []string{code}, phone)
+	err = svc.smsSvc.Send(ctx, codeTplId.Load(), []string{code}, phone)
 	return err
 }
 

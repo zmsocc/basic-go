@@ -22,8 +22,18 @@ type UserDAO interface {
 	FindByWechat(ctx context.Context, openID string) (User, error)
 }
 
+type DBProvider func() *gorm.DB
+
 type GORMUserDAO struct {
 	db *gorm.DB
+
+	p DBProvider
+}
+
+func NewUserDAOV1(p DBProvider) UserDAO {
+	return &GORMUserDAO{
+		p: p,
+	}
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {

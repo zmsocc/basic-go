@@ -26,6 +26,16 @@ func InitDB() *gorm.DB {
 		panic(err)
 	}
 
+	//dao.NewUserDAOV1(func() *gorm.DB {
+	//	viper.OnConfigChange(func(in fsnotify.Event) {
+	//		db, err = gorm.Open(mysql.Open())
+	//		pt := unsafe.Pointer(&db)
+	//		atomic.StorePointer(&pt, unsafe.Pointer(&db))
+	//	})
+	//	// 要用原子操作
+	//	return db
+	//})
+
 	err = dao.InitTable(db)
 	if err != nil {
 		panic(err)
