@@ -9,6 +9,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/ecodeclub/ekit v0.0.9
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-contrib/sessions v1.0.2
 	github.com/gin-gonic/gin v1.10.0
@@ -25,6 +26,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.1115
 	go.uber.org/atomic v1.11.0
 	go.uber.org/mock v0.5.0
+	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.31.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/sqlite v1.5.7
@@ -48,7 +50,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fredbi/uri v1.1.0 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fyne-io/gl-js v0.0.0-20220119005834-d2da28d9ccfe // indirect
 	github.com/fyne-io/glfw-js v0.0.0-20241126112943-313d8a0fe1d0 // indirect
 	github.com/fyne-io/image v0.0.0-20220602074514-4956b0afb3d2 // indirect
@@ -118,6 +119,7 @@ require (
 	go.etcd.io/etcd/client/pkg/v3 v3.5.0 // indirect
 	go.etcd.io/etcd/client/v2 v2.305.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.12.0 // indirect
 	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect

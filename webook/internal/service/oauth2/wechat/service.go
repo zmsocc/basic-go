@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitee.com/zmsoc/gogogo/webook/internal/domain"
+	"gitee.com/zmsoc/gogogo/webook/pkg/logger"
 	uuid "github.com/lithammer/shortuuid/v4"
+	"go.uber.org/zap"
 	"net/http"
 	"net/url"
 )
@@ -23,13 +25,16 @@ type service struct {
 	appSecret string
 	client    *http.Client
 	//cmd       redis.Cmdable
+	l logger.LoggerV1
 }
 
-func NewService(appId string, appSecret string, client *http.Client) Service {
+func NewService(appId string, appSecret string, l logger.LoggerV1) Service {
 	return &service{
 		appId:     appId,
 		appSecret: appSecret,
-		client:    client,
+		// 依赖注入，但是没有完全注入
+		client: http.DefaultClient,
+		l:      l,
 	}
 }
 
@@ -61,6 +66,11 @@ func (s *service) VerifyCode(ctx context.Context, code string) (domain.WechatInf
 	//if str != state {
 	//	// 不相等
 	//}
+
+	zap.L().Info("调用微信，拿到用户信息",
+		zap.String("unionID", res.UnionID),
+		zap.String("openID", res.OpenID))
+
 	return domain.WechatInfo{
 		OpenID:  res.OpenID,
 		UnionID: res.UnionID,

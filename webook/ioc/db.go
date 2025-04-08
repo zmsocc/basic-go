@@ -11,13 +11,13 @@ func InitDB() *gorm.DB {
 	type Config struct {
 		DSN string `yaml:"dsn"`
 	}
-	var cfg Config = Config{
-		DSN: "root:root@tcp(localhost:3306)/webook",
+	var cfg = Config{
+		DSN: "root:root@tcp(localhost:11316)/webook_default",
 	}
 	err := viper.UnmarshalKey("db", &cfg)
-	if err != nil {
-		panic(err)
-	}
+	//if err != nil {
+	//	panic(err)
+	//}
 	db, err := gorm.Open(mysql.Open(cfg.DSN))
 	if err != nil {
 		// 我只会在初始化过程中 panic

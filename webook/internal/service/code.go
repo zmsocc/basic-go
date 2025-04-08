@@ -50,6 +50,10 @@ func (svc *codeService) Send(ctx context.Context, biz string, phone string) erro
 	}
 	// 发送出去
 	err = svc.smsSvc.Send(ctx, codeTplId.Load(), []string{code}, phone)
+	if err != nil {
+		err = fmt.Errorf("发送短信出现异常 %w", err)
+	}
+
 	return err
 }
 
