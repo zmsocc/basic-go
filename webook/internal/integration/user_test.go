@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"gitee.com/zmsoc/gogogo/webook/internal/integration/startup"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
 	"gitee.com/zmsoc/gogogo/webook/ioc"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ import (
 )
 
 func TestUserHandler_e2e_SendLoginSMACode(t *testing.T) {
-	server := InitWebServer()
+	server := startup.InitWebServer()
 	rdb := ioc.InitRedis()
 	testCases := []struct {
 		name string

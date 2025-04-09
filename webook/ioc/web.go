@@ -1,28 +1,46 @@
 package ioc
 
 import (
+	"context"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
 	ijwt "gitee.com/zmsoc/gogogo/webook/internal/web/jwt"
 	"gitee.com/zmsoc/gogogo/webook/internal/web/middleware"
+	"gitee.com/zmsoc/gogogo/webook/pkg/ginx/middlewares/logger"
+	logger2 "gitee.com/zmsoc/gogogo/webook/pkg/logger"
+	"github.com/fsnotify/fsnotify"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
 	"strings"
 	"time"
 )
 
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler,
-	oauth2WechatHdl *web.OAuth2WechatHandler) *gin.Engine {
+	oauth2WechatHdl *web.OAuth2WechatHandler, articleHdl *web.ArticleHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls...)
 	userHdl.RegisterRoutes(server)
+	articleHdl.RegisterRoutes(server)
 	oauth2WechatHdl.RegisterRoutes(server)
 	return server
 }
 
-func InitMiddlewares(redisClient redis.Cmdable, jwtHdl ijwt.Handler) []gin.HandlerFunc {
+func InitMiddlewares(redisClient redis.Cmdable,
+	l logger2.LoggerV1, jwtHdl ijwt.Handler) []gin.HandlerFunc {
+	bd := logger.NewBuilder(func(ctx context.Context, al *logger.AccessLog) {
+		l.Debug("HTTP请求", logger2.Field{
+			Key:   "al",
+			Value: al,
+		})
+	}).AllowReqBody(true).AllowRespBody()
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		ok := viper.GetBool("web.logreq")
+		bd.AllowReqBody(ok)
+	})
 	return []gin.HandlerFunc{
 		corsHdl(),
+		bd.Build(),
 		middleware.NewLoginJWTMiddlewareBuilder(jwtHdl).
 			IgnorePaths("/users/signup").
 			IgnorePaths("/users/refresh_token").

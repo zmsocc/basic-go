@@ -333,6 +333,13 @@ func (u *UserHandler) LogoutJWT(ctx *gin.Context) {
 	})
 }
 
+//func (u *UserHandler) Do(fn func(ctx context.Context)(any, error))  {
+//	data, err := fn(ctx)
+//	if err != nil {
+//		// 在这里打日志
+//	}
+//}
+
 func (u *UserHandler) Logout(ctx *gin.Context) {
 	sess := sessions.Default(ctx)
 	// 我可以随便设置值了
