@@ -1,7 +1,7 @@
 version: '3.0'
 services:
-  mysql8:
-    image: mysql:8
+  mysql9:
+    image: mysql:9
     restart: always
     command:
       --default-authentication-plugin=mysql_native_password
@@ -14,17 +14,17 @@ services:
       # 注意这里映射为了 13316 端口
       - "13316:3306"
   redis:
-    image: 'bitnami/redis:latest'
+    image: 'bitnami/redis:7.4'
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - '6379:6379'
-  etcd:
-    image: 'bitnami/etcd:latest'
-    environment:
-      - ALLOW_NONE_AUTHENTICATION=yes
-    ports:
-# 所以你要用 12379 端口来连接 etcd
-      - 12379:2379
+#  etcd:
+#    image: 'bitnami/etcd:latest'
+#    environment:
+#      - ALLOW_NONE_AUTHENTICATION=yes
+#    ports:
+## 所以你要用 12379 端口来连接 etcd
+#      - 12379:2379
 
 

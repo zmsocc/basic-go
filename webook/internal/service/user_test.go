@@ -6,6 +6,7 @@ import (
 	"gitee.com/zmsoc/gogogo/webook/internal/domain"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
 	repomocks "gitee.com/zmsoc/gogogo/webook/internal/repository/mocks"
+	"gitee.com/zmsoc/gogogo/webook/pkg/logger"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
@@ -106,7 +107,7 @@ func Test_userService_Login(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			// 具体的测试代码
-			svc := NewUserService(tc.mock(ctrl))
+			svc := NewUserService(tc.mock(ctrl), &logger.NopLogger{})
 			u, err := svc.Login(tc.ctx, tc.email, tc.password)
 			assert.Equal(t, tc.wantErr, err)
 			assert.Equal(t, tc.wantUser, u)

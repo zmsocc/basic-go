@@ -4,6 +4,7 @@ package main
 
 import (
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
+	"gitee.com/zmsoc/gogogo/webook/internal/repository/article"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/cache"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
@@ -22,21 +23,25 @@ func InitWebServer() *gin.Engine {
 		ioc.InitLogger,
 		// 初始化 DAO
 		dao.NewUserDAO,
+		dao.NewGORMArticleDAO,
 		// 初始化 缓存
 		cache.NewUserCache,
 		cache.NewCodeCache,
 		//
 		repository.NewUserRepository,
 		repository.NewCodeRepository,
+		article.NewArticleRepository,
 
 		service.NewUserService,
 		service.NewCodeService,
+		service.NewArticleService,
 		// 直接基于内存实现
 		ioc.InitSMSService,
 		ioc.InitWechatService,
 
 		web.NewUserHandler,
 		web.NewOAuth2WechatHandler,
+		web.NewArticleHandler,
 		ioc.NewWechatHandlerConfig,
 		ijwt.NewRedisJWTHandler,
 		//gin.Default,

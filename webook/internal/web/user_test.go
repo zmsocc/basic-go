@@ -7,6 +7,7 @@ import (
 	"gitee.com/zmsoc/gogogo/webook/internal/domain"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	svcmocks "gitee.com/zmsoc/gogogo/webook/internal/service/mocks"
+	"gitee.com/zmsoc/gogogo/webook/internal/web/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,7 +33,7 @@ func TestNil(t *testing.T) {
 }
 
 func testTypenAssert(c any) {
-	_, ok := c.(*UserClaims)
+	_, ok := c.(jwt.UserClaims)
 	println(ok)
 }
 
@@ -187,7 +188,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 			defer ctrl.Finish()
 			server := gin.Default()
 			// 毕竟用不上 codeSvc
-			h := NewUserHandler(tc.mock(ctrl), nil)
+			h := NewUserHandler(tc.mock(ctrl), nil, nil)
 			h.RegisterRoutes(server)
 			req, err := http.NewRequest(http.MethodPost,
 				"/users/signup", bytes.NewBuffer([]byte(tc.reqBody)))
@@ -198,9 +199,6 @@ func TestUserHandler_SignUp(t *testing.T) {
 			resp := httptest.NewRecorder()
 
 			// 测 LoginSMS
-			server.Use(func(c *gin.Context) {
-				c.Set("user", UserClaims{})
-			})
 
 			// 这就是 HTTP 请求进去 GIN 框架的入口
 			// 当你这样调用的时候，GIN 就会处理这个请求

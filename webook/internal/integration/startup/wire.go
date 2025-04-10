@@ -4,6 +4,7 @@ package startup
 
 import (
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
+	"gitee.com/zmsoc/gogogo/webook/internal/repository/article"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/cache"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
@@ -34,7 +35,7 @@ func InitWebServer() *gin.Engine {
 		cache.NewCodeCache,
 		dao.NewGORMArticleDAO,
 		repository.NewCodeRepository,
-		repository.NewArticleRepository,
+		article.NewArticleRepository,
 
 		// service 部分
 		// 集成测试我们显式指定使用内存实现
@@ -71,7 +72,7 @@ func InitArticleHandler() *web.ArticleHandler {
 		dao.NewGORMArticleDAO,
 		service.NewArticleService,
 		web.NewArticleHandler,
-		repository.NewArticleRepository)
+		article.NewArticleRepository)
 	return &web.ArticleHandler{}
 }
 
