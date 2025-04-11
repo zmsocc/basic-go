@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 	"go.uber.org/atomic"
 	"math/rand"
 )
@@ -23,10 +23,10 @@ type CodeService interface {
 
 type codeService struct {
 	repo   repository.CodeRepository
-	smsSvc sms.Service
+	smsSvc service.Service
 }
 
-func NewCodeService(repo repository.CodeRepository, smsSvc sms.Service) CodeService {
+func NewCodeService(repo repository.CodeRepository, smsSvc service.Service) CodeService {
 	codeTplId.Store("1877556")
 	//viper.OnConfigChange(func(in fsnotify.Event) {
 	//	codeTplId.Store(viper.GetString("code.tpl.id"))

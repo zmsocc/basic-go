@@ -99,7 +99,7 @@ func Test_articleService_Publish(t *testing.T) {
 				article.ArticleReaderRepository) {
 				author := artrepomocks.NewMockArticleAuthorRepository(ctrl)
 				author.EXPECT().Update(gomock.Any(), domain.Article{
-					Id:      2,
+					Id:      3,
 					Title:   "我的标题",
 					Content: "我的内容",
 					Author: domain.Author{
@@ -110,7 +110,7 @@ func Test_articleService_Publish(t *testing.T) {
 				return author, reader
 			},
 			art: domain.Article{
-				Id:      2,
+				Id:      3,
 				Title:   "我的标题",
 				Content: "我的内容",
 				Author: domain.Author{
@@ -127,7 +127,7 @@ func Test_articleService_Publish(t *testing.T) {
 				article.ArticleReaderRepository) {
 				author := artrepomocks.NewMockArticleAuthorRepository(ctrl)
 				author.EXPECT().Update(gomock.Any(), domain.Article{
-					Id:      2,
+					Id:      3,
 					Title:   "我的标题",
 					Content: "我的内容",
 					Author: domain.Author{
@@ -137,7 +137,7 @@ func Test_articleService_Publish(t *testing.T) {
 				reader := artrepomocks.NewMockArticleReaderRepository(ctrl)
 				reader.EXPECT().Save(gomock.Any(), domain.Article{
 					// 确保使用了制作库 ID
-					Id:      2,
+					Id:      3,
 					Title:   "我的标题",
 					Content: "我的内容",
 					Author: domain.Author{
@@ -146,24 +146,24 @@ func Test_articleService_Publish(t *testing.T) {
 				}).Return(int64(0), errors.New("mock db error"))
 				reader.EXPECT().Save(gomock.Any(), domain.Article{
 					// 确保使用了制作库 ID
-					Id:      2,
+					Id:      3,
 					Title:   "我的标题",
 					Content: "我的内容",
 					Author: domain.Author{
 						Id: 123,
 					},
-				}).Return(int64(2), nil)
+				}).Return(int64(3), nil)
 				return author, reader
 			},
 			art: domain.Article{
-				Id:      2,
+				Id:      3,
 				Title:   "我的标题",
 				Content: "我的内容",
 				Author: domain.Author{
 					Id: 123,
 				},
 			},
-			wantId:  2,
+			wantId:  3,
 			wantErr: nil,
 		},
 		{

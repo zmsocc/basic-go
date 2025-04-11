@@ -2,12 +2,12 @@ package failover
 
 import (
 	"context"
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 	"sync/atomic"
 )
 
 type TimeoutFailoverSMSService struct {
-	svcs []sms.Service
+	svcs []service.Service
 	idx  int32
 	cnt  int32
 	// 阈值
@@ -49,6 +49,6 @@ func (t *TimeoutFailoverSMSService) Send(ctx context.Context,
 	}
 }
 
-func NewTimeoutFailoverSMSService() sms.Service {
+func NewTimeoutFailoverSMSService() service.Service {
 	return &TimeoutFailoverSMSService{}
 }

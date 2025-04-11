@@ -2,12 +2,12 @@ package logger
 
 import (
 	"context"
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	svc sms.Service
+	svc service.Service
 }
 
 func (s *Service) Send(ctx context.Context, biz string, args []string, numbers ...string) error {

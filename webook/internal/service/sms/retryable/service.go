@@ -3,17 +3,17 @@ package retryable
 import (
 	"context"
 	"errors"
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 )
 
 // 这个要小心并发问题
 type Service struct {
-	svc sms.Service
+	svc service.Service
 	// 重试
 	retryMax int
 }
 
-func NewService(svc sms.Service, retryMax int) sms.Service {
+func NewService(svc service.Service, retryMax int) service.Service {
 	return &Service{
 		svc:      svc,
 		retryMax: retryMax,

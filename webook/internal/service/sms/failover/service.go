@@ -3,18 +3,18 @@ package failover
 import (
 	"context"
 	"errors"
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 	"log"
 	"sync/atomic"
 )
 
 type FailoverSMSService struct {
-	svcs []sms.Service
+	svcs []service.Service
 
 	idx uint64
 }
 
-func NewFailoverSMSService(svcs []sms.Service) sms.Service {
+func NewFailoverSMSService(svcs []service.Service) service.Service {
 	return &FailoverSMSService{
 		svcs: svcs,
 	}

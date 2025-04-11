@@ -1,17 +1,17 @@
 package ratelimit
 
 import (
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 	"gitee.com/zmsoc/gogogo/webook/pkg/ratelimit"
 )
 
 type RatelimitSMSServiceV1 struct {
 	// 这样的话，注释 Send 方法不会报错
-	sms.Service
+	service.Service
 	limiter ratelimit.Limiter
 }
 
-func NewRatelimitSMSServiceV1(svc sms.Service, limiter ratelimit.Limiter) sms.Service {
+func NewRatelimitSMSServiceV1(svc service.Service, limiter ratelimit.Limiter) service.Service {
 	return &RatelimitSMSService{
 		svc:     svc,
 		limiter: limiter,

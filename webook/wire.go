@@ -7,6 +7,7 @@ import (
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/article"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/cache"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
+	article2 "gitee.com/zmsoc/gogogo/webook/internal/repository/dao/article"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
 	ijwt "gitee.com/zmsoc/gogogo/webook/internal/web/jwt"
@@ -23,7 +24,7 @@ func InitWebServer() *gin.Engine {
 		ioc.InitLogger,
 		// 初始化 DAO
 		dao.NewUserDAO,
-		dao.NewGORMArticleDAO,
+		article2.NewGORMArticleDAO,
 		// 初始化 缓存
 		cache.NewUserCache,
 		cache.NewCodeCache,

@@ -3,18 +3,18 @@ package ratelimit
 import (
 	"context"
 	"fmt"
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 	"gitee.com/zmsoc/gogogo/webook/pkg/ratelimit"
 )
 
 var errLimited = fmt.Errorf("短信服务触发限流")
 
 type RatelimitSMSService struct {
-	svc     sms.Service
+	svc     service.Service
 	limiter ratelimit.Limiter
 }
 
-func NewRatelimitSMSService(svc sms.Service, limiter ratelimit.Limiter) sms.Service {
+func NewRatelimitSMSService(svc service.Service, limiter ratelimit.Limiter) service.Service {
 	return &RatelimitSMSService{
 		svc:     svc,
 		limiter: limiter,

@@ -20,8 +20,8 @@ func main() {
 	//u := initUser(db, rdb)
 	//u.RegisterRoutes(server)
 
-	initViperV1()
-	initLogger()
+	//initViperV1()
+	//initLogger()
 	server := InitWebServer()
 	server.GET("/hello", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "你好 你来了")

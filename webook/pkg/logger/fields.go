@@ -20,3 +20,10 @@ func Error(err error) Field {
 		Value: err,
 	}
 }
+
+func Bool(key string, b bool) Field {
+	return Field{
+		Key:   key,
+		Value: b,
+	}
+}

@@ -15,7 +15,7 @@ func InitDB(l logger.LoggerV1) *gorm.DB {
 		DSN string `yaml:"dsn"`
 	}
 	var cfg = Config{
-		DSN: "root:root@tcp(localhost:11316)/webook_default",
+		DSN: "root:root@tcp(localhost:11326)/webook_default",
 	}
 	err := viper.UnmarshalKey("db", &cfg)
 	//if err != nil {
@@ -30,6 +30,7 @@ func InitDB(l logger.LoggerV1) *gorm.DB {
 			// 一次磁盘 IO 是不到 10ms
 			SlowThreshold:             time.Millisecond * 10,
 			IgnoreRecordNotFoundError: true,
+			ParameterizedQueries:      true,
 			LogLevel:                  glogger.Info,
 		}),
 	})

@@ -7,6 +7,7 @@ import (
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/article"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/cache"
 	"gitee.com/zmsoc/gogogo/webook/internal/repository/dao"
+	article2 "gitee.com/zmsoc/gogogo/webook/internal/repository/dao/article"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	"gitee.com/zmsoc/gogogo/webook/internal/web"
 	ijwt "gitee.com/zmsoc/gogogo/webook/internal/web/jwt"
@@ -33,7 +34,7 @@ func InitWebServer() *gin.Engine {
 		userSvcProvider,
 		//aticlSvcProvider,
 		cache.NewCodeCache,
-		dao.NewGORMArticleDAO,
+		article2.NewGORMArticleDAO,
 		repository.NewCodeRepository,
 		article.NewArticleRepository,
 
@@ -69,7 +70,7 @@ func InitWebServer() *gin.Engine {
 
 func InitArticleHandler() *web.ArticleHandler {
 	wire.Build(thirdProvider,
-		dao.NewGORMArticleDAO,
+		article2.NewGORMArticleDAO,
 		service.NewArticleService,
 		web.NewArticleHandler,
 		article.NewArticleRepository)

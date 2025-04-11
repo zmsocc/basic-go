@@ -2,7 +2,7 @@ package service
 
 import (
 	"gitee.com/zmsoc/gogogo/webook/internal/repository"
-	"gitee.com/zmsoc/gogogo/webook/internal/service/sms"
+	"gitee.com/zmsoc/gogogo/webook/internal/service/sms/service"
 	"reflect"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestNewCodeService(t *testing.T) {
 	type args struct {
 		repo   repository.CodeRepository
-		smsSvc sms.Service
+		smsSvc service.Service
 	}
 	tests := []struct {
 		name string
