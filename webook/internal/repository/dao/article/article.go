@@ -14,6 +14,7 @@ type AticleDAO interface {
 	Sync(ctx context.Context, art Article) (int64, error)
 	Upsert(ctx context.Context, art PublishedArticle) error
 	Transaction(ctx context.Context, bizFunc func(txDAO AticleDAO) error) error
+	SyncStatus(ctx context.Context, id int64, author int64, status uint8) error
 }
 
 func NewGORMArticleDAO(db *gorm.DB) AticleDAO {
@@ -24,6 +25,35 @@ func NewGORMArticleDAO(db *gorm.DB) AticleDAO {
 
 type GORMArticleDAO struct {
 	db *gorm.DB
+}
+
+func (dao *GORMArticleDAO) SyncStatus(ctx context.Context, id int64, author int64, status uint8) error {
+	now := time.Now().UnixMilli()
+	return dao.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&Article{}).
+			Where("id = ? AND author_id = ?", id, author).
+			Updates(map[string]any{
+				"status": status,
+				"utime":  now,
+			})
+		if res.Error != nil {
+			// 数据库有问题
+			return res.Error
+		}
+		if res.RowsAffected != 1 {
+			// 要么 ID 是错的， 要么作者不对
+			// 后者情况下，要小心，可能有人在搞你
+			// 没必要再用 ID 搜索数据库来区分这两种情况
+			// 用 prometheus 打点，只要频繁出现，你就告警，然后手工介入排查
+			return fmt.Errorf("可能有人在搞你, 误操作非自己的文章，uid: %d, aid: %d", author, id)
+		}
+		return tx.Model(&Article{}).
+			Where("id = ?", id).
+			Updates(map[string]any{
+				"status": status,
+				"utime":  now,
+			}).Error
+	})
 }
 
 func (dao *GORMArticleDAO) Transaction(ctx context.Context,
@@ -85,6 +115,7 @@ func (dao *GORMArticleDAO) Upsert(ctx context.Context, art PublishedArticle) err
 		DoUpdates: clause.Assignments(map[string]interface{}{
 			"titile":  art.Title,
 			"content": art.Content,
+			"status":  art.Status,
 			"utime":   art.Utime,
 		}),
 	}).Create(&art).Error
@@ -116,9 +147,12 @@ func (dao *GORMArticleDAO) UpdateById(ctx context.Context, art Article) error {
 	// 可读性很差
 	res := dao.db.WithContext(ctx).Model(&art).
 		Where("id = ? AND author_id = ?", art.Id, art.AuthorId).
+		// 当你用这种每次都指定被更新列的写法
+		// 可读性强，但是每一次更新更多列的时候，你都要修改
 		Updates(map[string]any{
 			"titile":  art.Title,
 			"content": art.Content,
+			"status":  art.Status,
 			"utime":   art.Utime,
 		})
 	// 你要不要检查真的更新了没
@@ -157,6 +191,12 @@ type Article struct {
 	AuthorId int64 `gorm:"index"`
 	//AuthorId int64 `gorm:"index=aid_ctime"`
 	//Ctime    int64 `gorm:"index=aid_ctime"`
-	Ctime int64
-	Utime int64
+
+	// 有些人考虑到，经常用状态来查询
+	// WHERE status = xxx AND
+	// 在 status 上和别的列混在一起，创建一个联合索引
+	// 要看别的列究竟是什么列。
+	Status uint8
+	Ctime  int64
+	Utime  int64
 }
