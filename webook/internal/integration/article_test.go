@@ -270,12 +270,10 @@ func (s *ArticleTestSuite) TestPublish() {
 				publishedArt.Utime = 0
 				publishedArt.Id = 0
 				assert.Equal(t, article.PublishedArticle{
-					Article: article.Article{
-						Title:    "hello，你好",
-						Content:  "随便试试",
-						AuthorId: 123,
-						Status:   domain.ArticleStatusPublished.ToUint8(),
-					},
+					Title:    "hello，你好",
+					Content:  "随便试试",
+					AuthorId: 123,
+					Status:   domain.ArticleStatusPublished.ToUint8(),
 				}, publishedArt)
 			},
 			req: Article{
@@ -331,13 +329,11 @@ func (s *ArticleTestSuite) TestPublish() {
 				publishedArt.Utime = 0
 
 				assert.Equal(t, article.PublishedArticle{
-					Article: article.Article{
-						Id:       2,
-						Status:   domain.ArticleStatusPublished.ToUint8(),
-						Content:  "新的内容",
-						Title:    "新的标题",
-						AuthorId: 123,
-					},
+					Id:       2,
+					Status:   domain.ArticleStatusPublished.ToUint8(),
+					Content:  "新的内容",
+					Title:    "新的标题",
+					AuthorId: 123,
 				}, publishedArt)
 			},
 			req: Article{
@@ -366,7 +362,13 @@ func (s *ArticleTestSuite) TestPublish() {
 				err := s.db.Create(&art).Error
 				assert.NoError(t, err)
 				part := article.PublishedArticle{
-					Article: art,
+					Id:       3,
+					Title:    "我的标题",
+					Content:  "我的内容",
+					Ctime:    456,
+					Utime:    234,
+					AuthorId: 123,
+					Status:   domain.ArticleStatusPublished.ToUint8(),
 				}
 				err = s.db.Create(&part).Error
 				assert.NoError(t, err)
@@ -398,13 +400,11 @@ func (s *ArticleTestSuite) TestPublish() {
 				publishedArt.Utime = 0
 
 				assert.Equal(t, article.PublishedArticle{
-					Article: article.Article{
-						Id:       3,
-						Status:   domain.ArticleStatusPublished.ToUint8(),
-						Content:  "新的内容",
-						Title:    "新的标题",
-						AuthorId: 123,
-					},
+					Id:       3,
+					Status:   domain.ArticleStatusPublished.ToUint8(),
+					Content:  "新的内容",
+					Title:    "新的标题",
+					AuthorId: 123,
 				}, publishedArt)
 			},
 			req: Article{
@@ -432,14 +432,13 @@ func (s *ArticleTestSuite) TestPublish() {
 				}
 				s.db.Create(&art)
 				part := article.PublishedArticle{
-					Article: article.Article{
-						Id:       4,
-						Title:    "我的标题",
-						Content:  "我的内容",
-						Ctime:    456,
-						Utime:    234,
-						AuthorId: 789,
-					}}
+					Id:       4,
+					Title:    "我的标题",
+					Content:  "我的内容",
+					Ctime:    456,
+					Utime:    234,
+					AuthorId: 789,
+				}
 				s.db.Create(&part)
 			},
 			after: func(t *testing.T) {

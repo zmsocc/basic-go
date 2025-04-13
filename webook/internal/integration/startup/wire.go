@@ -63,19 +63,23 @@ func InitWebServer() *gin.Engine {
 	return gin.Default()
 }
 
-//func InitArticleHandler() *web.ArticleHandler {
-//	wire.Build(thirdProvider, articlSvcProvider, web.NewArticleHandler)
-//	return new(web.ArticleHandler)
-//}
-
-func InitArticleHandler() *web.ArticleHandler {
-	wire.Build(thirdProvider,
-		article2.NewGORMArticleDAO,
+func InitArticleHandler(dao article2.ArticleDAO) *web.ArticleHandler {
+	wire.Build(
+		thirdProvider,
+		article.NewArticleRepository,
 		service.NewArticleService,
-		web.NewArticleHandler,
-		article.NewArticleRepository)
-	return &web.ArticleHandler{}
+		web.NewArticleHandler)
+	return new(web.ArticleHandler)
 }
+
+//func InitArticleHandler() *web.ArticleHandler {
+//	wire.Build(thirdProvider,
+//		article2.NewGORMArticleDAO,
+//		service.NewArticleService,
+//		web.NewArticleHandler,
+//		article.NewArticleRepository)
+//	return &web.ArticleHandler{}
+//}
 
 func InitUserSvc() service.UserService {
 	wire.Build(thirdProvider, userSvcProvider)
