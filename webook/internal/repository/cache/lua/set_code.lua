@@ -1,21 +1,21 @@
 -- 你的验证码在 Redis 上的 Key
 -- phone_code:login:189xxxxxxxx
-local key = KEYS[1]
+local firstPageKey = KEYS[1]
 -- 验证次数，我们一个验证码，最多重复三次，这个记录了验证了几次
 -- phone_code:login:189xxxxxxxx:cnt
-local cntKey = key..":cnt"
+local cntKey = firstPageKey..":cnt"
 -- 你的验证码 123456
 local val = ARGV[1]
 -- 过期时间
-local ttl = tonumber(redis.call("ttl", key))
+local ttl = tonumber(redis.call("ttl", firstPageKey))
 if ttl == -1 then
-    -- key 存在，但是没有过期时间
-    -- 系统错误，你的同事手贱，手动设置了这个 key, 但是没给过期时间
+    -- firstPageKey 存在，但是没有过期时间
+    -- 系统错误，你的同事手贱，手动设置了这个 firstPageKey, 但是没给过期时间
     return -2
     -- 540 = 600 - 60 九分钟
 elseif ttl == -2 or ttl < 540 then
-    redis.call("set", key, val)
-    redis.call("expire", key, 600)
+    redis.call("set", firstPageKey, val)
+    redis.call("expire", firstPageKey, 600)
     redis.call("set", cntKey, 3)
     redis.call("expire", cntKey, 600)
     -- 完美，符合预期

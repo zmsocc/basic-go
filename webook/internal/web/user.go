@@ -1,9 +1,12 @@
 package web
 
 import (
+	"fmt"
 	"gitee.com/zmsoc/gogogo/webook/internal/domain"
 	"gitee.com/zmsoc/gogogo/webook/internal/service"
 	ijwt "gitee.com/zmsoc/gogogo/webook/internal/web/jwt"
+	"gitee.com/zmsoc/gogogo/webook/pkg/ginx"
+	"gitee.com/zmsoc/gogogo/webook/pkg/logger"
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -29,10 +32,11 @@ type UserHandler struct {
 	passwordExp *regexp.Regexp
 	ijwt.Handler
 	cmd redis.Cmdable
+	l   logger.LoggerV1
 }
 
 func NewUserHandler(svc service.UserService, codeSvc service.CodeService,
-	jwtHdl ijwt.Handler) *UserHandler {
+	jwtHdl ijwt.Handler, l logger.LoggerV1) *UserHandler {
 	const (
 		emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 		passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
@@ -61,11 +65,11 @@ func (u *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug.GET("/profile", u.ProfileJWT)
 	ug.POST("/signup", u.SignUp)
 	//ug.POST("/login", u.Login)
-	ug.POST("/login", u.LoginJWT)
+	ug.POST("/login", ginx.WrapBodyV1(u.LoginJWT))
 	ug.POST("/logout", u.LogoutJWT)
 	ug.POST("/edit", u.Edit)
 	ug.POST("/login_sms/code/send", u.SendLoginSMACode)
-	ug.POST("/login_sms", u.LoginSMS)
+	ug.POST("/login_sms", ginx.WrapBody[LoginSMSReq](u.l.With(logger.String("method", "login_sms")), u.LoginSMS))
 	ug.POST("/refresh_token", u.RefreshToken)
 }
 
@@ -108,57 +112,56 @@ func (u *UserHandler) RefreshToken(ctx *gin.Context) {
 
 }
 
-func (u *UserHandler) LoginSMS(ctx *gin.Context) {
-	type Req struct {
-		Phone string `json:"phone"`
-		Code  string `json:"code"`
-	}
-	var req Req
-	if err := ctx.Bind(&req); err != nil {
-		return
-	}
+type LoginSMSReq struct {
+	Phone string `json:"phone"`
+	Code  string `json:"code"`
+}
+
+func (u *UserHandler) LoginSMS(ctx *gin.Context, req LoginSMSReq) (Result, error) {
 	ok, err := u.codeSvc.Verify(ctx, biz, req.Phone, req.Code)
 	if err != nil {
-		ctx.JSON(http.StatusOK, Result{
-			Code: 5,
-			Msg:  "系统错误",
-		})
-		zap.L().Error("校验验证码出错", zap.Error(err)) // 不能这样打，因为手机号码是敏感数据，你不能打到日志里面
-		//zap.String("手机号码", req.Phone)
-
-		// 最多这样打日志，要非常小心
-		zap.L().Debug("", zap.String("手机号码", req.Phone))
-		return
+		//ctx.JSON(http.StatusOK, Result{
+		//	Code: 5,
+		//	Msg:  "系统错误",
+		//})
+		//zap.L().Error("校验验证码出错", zap.Error(err)) // 不能这样打，因为手机号码是敏感数据，你不能打到日志里面
+		////zap.String("手机号码", req.Phone)
+		//
+		//// 最多这样打日志，要非常小心
+		//zap.L().Debug("", zap.String("手机号码", req.Phone))
+		//return Result{Code: 5, Msg: "系统异常"}, err
+		return Result{Code: 5, Msg: "系统异常"}, fmt.Errorf("用户手机号码登录失败 %w", err)
 	}
 	if !ok {
-		ctx.JSON(http.StatusOK, Result{
-			Code: 4,
-			Msg:  "验证码有误",
-		})
-		return
+		//ctx.JSON(http.StatusOK, Result{
+		//	Code: 4,
+		//	Msg:  "验证码有误",
+		//})
+		return Result{Code: 4, Msg: "验证码有误"}, nil
 	}
 
 	// 我这个手机号，会不会是一个新用户
 	user, err := u.svc.FindOrCreate(ctx, req.Phone)
 	if err != nil {
-		ctx.JSON(http.StatusOK, Result{
-			Code: 5,
-			Msg:  "系统错误",
-		})
-		return
+		//ctx.JSON(http.StatusOK, Result{
+		//	Code: 5,
+		//	Msg:  "系统错误",
+		//})
+		return Result{Code: 5, Msg: "系统错误"}, fmt.Errorf("登录或者注册用户失败 %w", err)
 	}
 	if err = u.SetLoginToken(ctx, user.Id); err != nil {
 		// 记录日志
-		ctx.JSON(http.StatusOK, Result{
-			Code: 5,
-			Msg:  "系统错误",
-		})
-		return
+		//ctx.JSON(http.StatusOK, Result{
+		//	Code: 5,
+		//	Msg:  "系统错误",
+		//})
+		return Result{Code: 5, Msg: "系统错误"}, fmt.Errorf("登录或者注册用户失败 %w", err)
 	}
 
-	ctx.JSON(http.StatusOK, Result{
-		Msg: "验证码校验通过",
-	})
+	//ctx.JSON(http.StatusOK, Result{
+	//	Msg: "验证码校验通过",
+	//})
+	return Result{Msg: "登陆成功"}, nil
 }
 
 func (u *UserHandler) SendLoginSMACode(ctx *gin.Context) {
@@ -249,23 +252,20 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "注册成功 ")
 }
 
-func (u *UserHandler) LoginJWT(ctx *gin.Context) {
-	type LoginReq struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	var req LoginReq
-	if err := ctx.Bind(&req); err != nil {
-		return
-	}
+type LoginReq struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (u *UserHandler) LoginJWT(ctx *gin.Context, req LoginReq) (Result, error) {
 	user, err := u.svc.Login(ctx, req.Email, req.Password)
 	if err == service.ErrInvalidUserOrPassword {
-		ctx.String(http.StatusOK, "用户名或密码不对")
-		return
+		//ctx.String(http.StatusOK, "用户名或密码不对")
+		return Result{Code: 4, Msg: "用户名或密码不对"}, nil
 	}
 	if err != nil {
-		ctx.String(http.StatusOK, "系统错误")
-		return
+		//ctx.String(http.StatusOK, "系统错误")
+		return Result{Code: 5, Msg: "系统错误"}, nil
 	}
 
 	// 在这里登陆成功了
@@ -274,12 +274,12 @@ func (u *UserHandler) LoginJWT(ctx *gin.Context) {
 	// 在这里用 JWT 设置登录态
 	// 生成一个 token
 	if err = u.SetLoginToken(ctx, user.Id); err != nil {
-		ctx.String(http.StatusOK, "系统错误")
-		return
+		//ctx.String(http.StatusOK, "系统错误")
+		return Result{Msg: "系统错误"}, nil
 	}
 
-	ctx.String(http.StatusOK, "登陆成功")
-	return
+	//ctx.String(http.StatusOK, "登陆成功")
+	return Result{Msg: "登陆成功"}, nil
 }
 
 func (u *UserHandler) Login(ctx *gin.Context) {

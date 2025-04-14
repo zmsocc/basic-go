@@ -39,11 +39,11 @@ package cache
 //	// 因为你可以预期，大部分时候是要走到写锁里面的
 //
 //	// 我选用的本地缓存，很不幸的是，没有获得过期时间的接口，所以都是自己维持了一个过期的接口
-//	key := l.
+//	firstPageKey := l.
 //	now := time.Now()
-//	val, ok := l.cache.Get(key)
+//	val, ok := l.cache.Get(firstPageKey)
 //	if !ok {
 //		// 说明没有验证码
-//		l.cache.Add(key, codeItem{})
+//		l.cache.Add(firstPageKey, codeItem{})
 //	}
 //}

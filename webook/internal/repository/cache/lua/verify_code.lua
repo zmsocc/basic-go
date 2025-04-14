@@ -1,8 +1,8 @@
-local key = KEYS[1]
+local firstPageKey = KEYS[1]
 -- 用户输入的 code
 local expectedCode = ARGV[1]
-local code = redis.call("get", key)
-local cntKey = key..":cnt"
+local code = redis.call("get", firstPageKey)
+local cntKey = firstPageKey..":cnt"
 -- 转成一个数字
 local cnt = tonumber(redis.call("get", cntKey))
 if cnt == nil or cnt <= 0 then
